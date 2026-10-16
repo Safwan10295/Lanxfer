@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>lanxfer</title>
+<link rel="icon" href="/icon.png">
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--fg:#16181d;--mute:#69707d;--line:#e2e5ea;--acc:#2456d6;--ok:#167a3e;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#111318;--card:#1a1d24;--fg:#e8eaee;--mute:#99a1ad;--line:#2b2f39;--acc:#7aa5ff;--ok:#56d38a;--bad:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:22px 16px 48px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+header img{width:28px;height:28px}
+h1{font-size:19px;margin:0}
+h2{font-size:17px;margin:0 0 4px}
+h3{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px;font-weight:600;display:flex;justify-content:space-between;align-items:baseline}
+.grow{flex:1}
+.speed{font-variant-numeric:tabular-nums;color:var(--mute)}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px}
+.mute{color:var(--mute);font-size:13px;margin:6px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:12px}
+@media(max-width:600px){.two{grid-template-columns:1fr}}
+.pane{border:1px solid var(--line);border-radius:10px;padding:14px}
+.pane b.t{display:block;margin-bottom:6px}
+.code{font:600 38px/1.1 ui-monospace,Consolas,monospace;letter-spacing:.1em;padding:6px 0}
+.qr{display:flex;gap:12px;align-items:flex-start}
+.qr img{width:120px;height:120px;border-radius:8px;flex:0 0 auto;background:#fff}
+.url{font:12px ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+.badge{font-size:11px;font-weight:600;border-radius:99px;padding:1px 8px;margin-left:6px;border:1px solid var(--line);color:var(--mute)}
+.badge.on{border-color:var(--ok);color:var(--ok)}
+#hint{font-size:12px}
+input[type=text]{font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+#pcode{font:600 18px ui-monospace,Consolas,monospace;letter-spacing:.16em;text-align:center}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#drop{border:2px dashed var(--line);border-radius:12px;padding:26px 16px;text-align:center;cursor:pointer;color:var(--mute);margin-top:12px}
+#drop.over{border-color:var(--acc);color:var(--acc)}
+button{font:inherit;cursor:pointer}
+button.go{font-weight:600;border:0;border-radius:8px;padding:9px 18px;background:var(--acc);color:var(--card)}
+button.go:disabled{opacity:.4;cursor:default}
+button.ghost{border:1px solid var(--line);background:none;color:inherit;border-radius:8px;padding:5px 12px;font-size:13px}
+button.link{font-size:12px;background:none;border:0;color:var(--mute);text-decoration:underline;text-transform:none;letter-spacing:0;font-weight:400}
+.peers{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.peer{border:1px solid var(--line);background:none;color:inherit;border-radius:8px;padding:6px 12px}
+.peer[aria-pressed=true]{border-color:var(--acc);color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.file{padding:9px 0;border-top:1px solid var(--line)}
+.file:first-child{border-top:0}
+.file .top{display:flex;gap:10px;align-items:center}
+.file .name{overflow-wrap:anywhere;flex:1}
+.file .meta{font-size:13px;color:var(--mute);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bar{height:4px;border-radius:9px;background:var(--line);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--acc)}
+.ok .meta{color:var(--ok)}
+.failed .meta,.err,#msg.bad{color:var(--bad)}
+.err{font-size:13px}
+#stopped{text-align:center;padding:60px 16px}
+.dest{border:1px solid var(--line);border-radius:12px;padding:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--acc) 5%,transparent),transparent 70%)}
+.dest-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.dest-h svg{width:22px;height:22px;fill:none;stroke:var(--acc);stroke-width:1.6;stroke-linecap:round;flex:0 0 auto}
+.status{margin-left:auto;font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line)}
+.status.on{color:var(--ok)}
+.status.on::before{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+button.wide{width:100%;padding:12px 18px;font-size:15px}
+button.go{transition:transform .08s,filter .15s}
+button.go:not(:disabled):hover{filter:brightness(1.08)}
+button.go:not(:disabled):active{transform:scale(.98)}
+#drop{transition:border-color .15s,background .15s}
+#drop:hover,#drop.over{border-color:var(--acc);color:var(--acc);background:color-mix(in srgb,var(--acc) 6%,transparent)}
+.file .name::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:8px;vertical-align:middle;background:var(--line)}
+.ok .name::before{background:var(--ok)}
+.waiting .name::before{background:var(--acc)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="/icon.png" alt="">
+    <h1>lanxfer</h1><span class="mute" id="me"></span>
+    <span class="grow"></span>
+    <span class="speed" id="speed"></span>
+    <span class="mute" id="hint">Closing this window keeps lanxfer running in the tray.</span>
+    <button class="ghost" id="quit" title="Stop lanxfer on this computer, including receiving">Quit</button>
+  </header>
+
+  <div id="stopped" hidden>
+    <h2>lanxfer has stopped</h2>
+    <p class="mute">Start it again from the lanxfer shortcut. You can close this window.</p>
+  </div>
+
+  <div id="app" hidden>
+  <section>
+    <h2>Receive on this computer</h2>
+    <p class="mute">Anything sent here is saved automatically to <b id="dir"></b>. <button class="ghost" id="openfolder">Open folder</button></p>
+    <div class="two">
+      <div class="pane">
+        <b class="t">Pairing code</b>
+        <div class="code" id="code"></div>
+        <p class="mute">Type this on the phone or computer that is sending. A phone only needs it the first time.</p>
+      </div>
+      <div class="pane" id="phonepane">
+        <b class="t">From a phone <span id="anywhere" class="badge"></span></b>
+        <div class="qr">
+          <img id="qr" alt="QR code that opens lanxfer on a phone">
+          <div><p class="mute" style="margin:0" id="phonehow"></p><button class="go" id="tslogin" style="margin-top:8px" hidden>Connect to Tailscale</button><p class="url" id="url" style="margin:6px 0 0"></p></div>
+        </div>
+      </div>
+    </div>
+    <p class="mute">From another computer: open lanxfer there, add the files, pick <b id="me2"></b> and enter the code above.</p>
+    <div id="inbox" hidden>
+      <h3>Received <button class="link" id="clearin">Clear list</button></h3>
+      <div id="inlist"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Send from this computer</h2>
+    <div id="drop" tabindex="0" role="button">Drop files here, or click to choose</div>
+    <input type="file" id="pick" multiple hidden>
+    <div id="outbox" hidden>
+      <h3>Your files <button class="link" id="clearout">Clear list</button></h3>
+      <div id="outlist"></div>
+      <h3>Send them to</h3>
+      <div class="two">
+        <div class="dest">
+          <div class="dest-h">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg>
+            <b>Your phone</b>
+            <span class="status" id="phonestate"></span>
+          </div>
+          <button class="go wide" id="tophone">Send to phone</button>
+          <p class="mute" id="tophonehint">They'll appear in lanxfer on the phone, ready to download.</p>
+        </div>
+        <div class="dest">
+          <div class="dest-h">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="11.5" rx="1.5"/><path d="M1.5 19.5h21"/></svg>
+            <b>Another computer</b>
+          </div>
+          <div class="peers" id="peers"></div>
+          <div class="row">
+            <input type="text" id="pcode" placeholder="its code" inputmode="numeric" maxlength="7" autocomplete="off" aria-label="The other computer's pairing code" style="flex:1;min-width:110px">
+            <button class="go" id="go">Send</button>
+          </div>
+          <details class="mute"><summary>Not listed?</summary>
+            <input type="text" id="manual" placeholder="its direct address, host:port" autocomplete="off" spellcheck="false" style="margin-top:6px">
+          </details>
+        </div>
+      </div>
+    </div>
+    <p id="msg" class="mute"></p>
+  </section>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+let st = null, peer = '', localMsg = '', peerSig = null;
+
+function human(n) {
+  const u = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+  return (i ? n.toFixed(1) : Math.round(n)) + ' ' + u[i];
+}
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+const post = (url, opts) => fetch(url, Object.assign({ method: 'POST' }, opts));
+
+// What each status means to the person looking at it.
+const LABEL = {
+  receiving: 'receiving', loading: 'adding', sending: 'sending',
+  verifying: 'checking…', ready: 'ready', done: 'saved ✓', sent: 'sent ✓',
+  failed: 'failed', interrupted: 'interrupted',
+  offered: 'waiting for phone', fetched: 'on phone ✓',
+};
+const MOVING = ['receiving', 'loading', 'sending'];
+
+// Rows are updated in place (not rebuilt) so buttons stay clickable while
+// progress ticks.
+const rows = new Map();
+function syncList(box, files) {
+  const keep = new Set(files.map(f => f.id));
+  for (const [id, r] of rows) {
+    if (r.box === box && !keep.has(id)) { r.el.remove(); rows.delete(id); }
+  }
+  for (const f of files) {
+    let r = rows.get(f.id);
+    if (!r) {
+      r = { box, el: el('div', 'file'), meta: el('span', 'meta'), bar: el('div', 'bar'), fill: el('i'), err: el('div', 'err'), show: el('button', 'ghost', 'Show in folder') };
+      const top = el('div', 'top');
+      top.append(el('span', 'name', f.name), r.meta, r.show);
+      r.bar.append(r.fill);
+      r.el.append(top, r.bar, r.err);
+      r.show.onclick = () => post('/api/reveal?id=' + f.id);
+      rows.set(f.id, r);
+      box.append(r.el);
+    }
+    const pct = f.size ? Math.floor(100 * f.done / f.size) : 0;
+    const moving = MOVING.includes(f.status);
+    r.meta.textContent = human(f.size) + ' · ' + (LABEL[f.status] || f.status) + (moving ? ' ' + pct + '%' : '');
+    r.fill.style.width = pct + '%';
+    r.bar.hidden = !moving;
+    r.show.hidden = !(f.in && f.status === 'done');
+    r.err.textContent = f.error || '';
+    r.err.hidden = !f.error;
+    r.el.className = 'file' + (['done', 'sent', 'fetched'].includes(f.status) ? ' ok' : f.status === 'failed' ? ' failed' : f.status === 'offered' ? ' waiting' : '');
+  }
+}
+
+function render() {
+  $('app').hidden = false;
+  $('me').textContent = '· ' + st.name;
+  $('me2').textContent = st.name;
+  $('speed').textContent = st.speed > 0 ? human(st.speed) + '/s' : '';
+  $('dir').textContent = st.dir;
+  $('code').textContent = st.code.slice(0, 3) + ' ' + st.code.slice(3);
+  const link = st.remote || st.url;
+  $('phonepane').hidden = !link;
+  if ($('qr').dataset.link !== link) { $('qr').dataset.link = link; $('qr').src = '/qr.png?u=' + encodeURIComponent(link); }
+  $('url').textContent = link;
+  $('anywhere').textContent = st.remote ? 'works anywhere' : 'same Wi-Fi';
+  $('anywhere').className = 'badge ' + (st.remote ? 'on' : '');
+  $('phonehow').textContent = st.ts === 'https'
+    ? 'Scan with the phone camera (Tailscale on). Enter the code once, then Share → Add to Home Screen to keep it as an app.'
+    : 'Scan with the phone camera on this Wi-Fi. First time: continue past the certificate warning and enter the code. ' + (st.tsHint || '');
+  $('tslogin').hidden = st.ts !== 'login';
+
+  const incoming = st.files.filter(f => f.in), outgoing = st.files.filter(f => !f.in);
+  $('inbox').hidden = !incoming.length;
+  $('outbox').hidden = !outgoing.length;
+  syncList($('inlist'), incoming);
+  syncList($('outlist'), outgoing);
+
+  const peers = st.peers || [];
+  if (!peers.some(p => p.name === peer)) peer = '';
+  if (!peer && peers.length === 1 && !$('manual').value) peer = peers[0].name;
+  const sig = peers.map(p => p.name).join('\n') + '\n\n' + peer;
+  if (sig !== peerSig) {
+    peerSig = sig;
+    $('peers').replaceChildren(...peers.map(p => {
+      const b = el('button', 'peer', p.name);
+      b.setAttribute('aria-pressed', p.name === peer);
+      b.onclick = () => { peer = p.name; $('manual').value = ''; render(); };
+      return b;
+    }));
+    if (!peers.length) $('peers').append(el('span', 'mute', 'Looking for computers running lanxfer…'));
+  }
+  const target = $('manual').value.trim() || peer;
+  const sendable = outgoing.some(f => f.status !== 'loading');
+  $('go').disabled = st.busy || !sendable || !target || $('pcode').value.replace(/\D/g, '').length !== 6;
+  $('clearout').hidden = st.busy;
+  const phoneReady = outgoing.some(f => ['ready', 'sent', 'failed'].includes(f.status));
+  $('tophone').disabled = !phoneReady;
+  $('tophone').textContent = phoneReady ? 'Send to phone'
+    : outgoing.some(f => f.status === 'offered') ? 'Sent ✓ waiting for the phone' : 'On the phone ✓';
+  $('phonestate').textContent = st.phoneOnline ? 'phone connected' : 'phone not open';
+  $('phonestate').className = 'status' + (st.phoneOnline ? ' on' : '');
+
+  const m = localMsg || st.message || '';
+  $('msg').textContent = m;
+  $('msg').className = /^Failed|^Error/.test(m) ? 'bad' : 'mute';
+}
+
+const es = new EventSource('/api/events');
+es.onmessage = e => { st = JSON.parse(e.data); render(); };
+// The browser reconnects by itself; only give up after Quit or a long outage.
+let quitting = false, lostAt = 0;
+function stopped() { $('app').hidden = true; $('stopped').hidden = false; $('quit').hidden = true; es.close(); }
+es.onopen = () => { lostAt = 0; $('speed').textContent = ''; };
+es.onerror = () => {
+  if (quitting) return stopped();
+  lostAt = lostAt || Date.now();
+  if (Date.now() - lostAt > 60000) return stopped();
+  $('speed').textContent = 'reconnecting…';
+};
+
+// Files are copied into lanxfer one at a time, in drop order.
+let chain = Promise.resolve();
+function addFiles(list) {
+  for (const f of list) {
+    chain = chain.then(async () => {
+      localMsg = '';
+      try {
+        const r = await post('/api/upload?name=' + encodeURIComponent(f.name), { body: f });
+        if (!r.ok) localMsg = 'Error: ' + f.name + ': ' + (await r.text()).trim();
+      } catch (err) {
+        localMsg = 'Error: could not add ' + f.name + ' (folders are not supported)';
+      }
+    });
+  }
+}
+
+const drop = $('drop');
+drop.onclick = () => $('pick').click();
+drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') $('pick').click(); };
+$('pick').onchange = e => { addFiles(e.target.files); e.target.value = ''; };
+addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+addEventListener('dragleave', () => drop.classList.remove('over'));
+addEventListener('drop', e => { e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files); });
+
+$('pcode').oninput = $('manual').oninput = () => { if ($('manual').value) peer = ''; if (st) render(); };
+$('clearout').onclick = () => { localMsg = ''; post('/api/clear?what=out'); };
+$('tophone').onclick = async () => {
+  localMsg = '';
+  const r = await post('/api/tophone');
+  localMsg = r.ok ? 'Sent. Open lanxfer on the phone and tap Save next to each file.' : 'Error: ' + (await r.text()).trim();
+};
+$('clearin').onclick = () => post('/api/clear?what=in');
+$('openfolder').onclick = () => post('/api/reveal');
+$('tslogin').onclick = async () => {
+  const r = await post('/api/tslogin');
+  localMsg = r.ok ? 'Sign in on the page that just opened in your browser. This is only needed once.' : 'Error: ' + (await r.text()).trim();
+};
+$('quit').onclick = () => { quitting = true; post('/api/quit').finally(stopped); };
+$('go').onclick = async () => {
+  localMsg = '';
+  const r = await post('/api/send', {
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ peer: $('manual').value.trim() || peer, code: $('pcode').value }),
+  });
+  if (!r.ok) localMsg = 'Error: ' + (await r.text()).trim();
+};
+</script>
+</body>
+</html>
