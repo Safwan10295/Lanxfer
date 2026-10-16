@@ -1,5 +1,7 @@
 # lanxfer
 
+[![test](https://github.com/Safwan10295/Lanxfer/actions/workflows/test.yml/badge.svg)](https://github.com/Safwan10295/Lanxfer/actions/workflows/test.yml)
+
 Fast, encrypted file transfer between your computers and your phone, at
 home on Wi-Fi or from anywhere through Tailscale. One small Go program, no
 cloud storage, no accounts on someone else's server.
@@ -41,7 +43,9 @@ iPhone install it as a home-screen app.
 
 ## Using it
 
-Build (Go 1.27 or newer):
+**Windows:** download `lanxfer.exe` from the [latest release](https://github.com/Safwan10295/Lanxfer/releases/latest), and double-click it. To get Start menu and desktop shortcuts, run `lanxfer.exe install` once from a terminal.
+
+**Build it yourself** (Go 1.27 or newer):
 
 ```
 go build -o lanxfer.exe .
